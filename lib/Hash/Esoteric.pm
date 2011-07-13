@@ -96,7 +96,7 @@ will return the following hashref:
       3 => [ "e", "f", "g" ],
   };
 
-=head2 my $aref = keys_by_buckets(\%hash)
+=head2 my $aref = keys_by_bucket(\%hash)
 
 This function returns an arrayref that holds one arrayref per bucket
 in the hash.  These arrayrefs hold the keys that are in the 
