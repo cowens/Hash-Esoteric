@@ -17,7 +17,7 @@ our @EXPORT_OK = qw(
 );
 our @EXPORT;
 
-our $VERSION = '0.01';
+our $VERSION = '20110717';
 
 sub hash_seed {
 	if (@_) {
