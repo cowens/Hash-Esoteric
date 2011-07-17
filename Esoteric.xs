@@ -18,7 +18,7 @@ SV* keys_by_bucket(HV* h) {
 
 	array = HvARRAY(h);
 	
-	buckets = array == (HE**)NULL ? 0 : HvMAX(h);
+	buckets = array == (HE**)NULL ? 0 : (HvMAX(h) + 1);
 
 	for (i = 0; i < buckets; i++) {
 		bucket_items = newAV();
@@ -62,6 +62,19 @@ SV* keys_by_collisions(HV* h) {
 	return newRV_noinc((SV*)keys_by_collisions);
 }
 
+int rehashed(HV* h) {
+	return HvREHASH(h);
+}
+
+void set_hash_seed(UV seed) {
+	PL_rehash_seed     = seed;
+	PL_rehash_seed_set = TRUE; /* don't know if I need to do this or not */
+}
+
+UV get_hash_seed() {
+	return PL_rehash_seed;
+}
+
 MODULE = Hash::Esoteric		PACKAGE = Hash::Esoteric		
 
 INCLUDE: const-xs.inc
@@ -73,3 +86,11 @@ SV* keys_by_bucket(h)
 
 SV* keys_by_collisions(h)
 	HV* h;
+
+int rehashed(h)
+	HV* h;
+
+void set_hash_seed(seed)
+	UV seed;
+
+UV get_hash_seed()

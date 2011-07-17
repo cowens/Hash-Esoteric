@@ -9,10 +9,23 @@ use AutoLoader;
 
 our @ISA = qw(Exporter);
 
-our @EXPORT_OK = qw/keys_by_collisions keys_by_bucket/;
+our @EXPORT_OK = qw(
+	keys_by_collisions
+	keys_by_bucket
+	rehashed
+	hash_seed
+);
 our @EXPORT;
 
 our $VERSION = '0.01';
+
+sub hash_seed {
+	if (@_) {
+		my $seed = shift || 0;
+		set_hash_seed($seed);
+	}
+	return get_hash_seed();
+}
 
 sub AUTOLOAD {
     # This AUTOLOAD is used to 'autoload' constants from the constant()
@@ -118,6 +131,57 @@ will return the following arrayref:
       [],
   ];
 
+=head2 my $boolean = rehashed(\%hash);
+
+This function returns true if the hash has the hash randomization
+feature discussed in L<perlsec/"Algorithmic Complexity Attacks">
+turned on.
+
+=head2 my $cur_seed = hash_seed();
+=head2 my $new_seed = hash_seed($some_integer_value);
+
+This function either retrieves the current L<perlrun/PERL_HASH_SEED>
+(when passed no arguments) or sets C<PERL_HASH_SEED>.
+
+WARNING
+
+The setting version of this function can cause serious bugs.  If you
+have any hashes that have hash randomization turned on, then you MUST
+turn it off before calling this function.  Failure to do so will cause
+the hash to no longer work properly.
+
+It can also break people's valid assumptions about what the
+C<PERL_HASH_SEED> is (e.g. if they passed in a value through the
+PERL_HASH_SEED environment variable).
+
+=head1 SEE ALSO
+
+L<perlsec/"Algorithmic Complexity Attacks">
+L<perlrun/PERL_HASH_SEED>
+L<perlrun/PERL_HASH_SEED_DEBUG>
+
+=head1 BUGS
+
+The keys_by_collisions and keys_by_bucket functions both rely on the
+internal structure of a hash being an array of buckets that can by
+retrieved by C<HvARRAY> and the each bucket holds a set of keys that
+can be listed by C<HeNEXT>.  Neither of these functions appear to be
+public (i.e. they aren't in L<perlapi>).  This means that a new
+version of Perl 5 could break them.
+
+The rehashed function also relies on functions that do not
+appear to be public.
+
+The setting form of C<hash_seed> is very dangerous and can, under the
+right circumstances, break some hashes.  It is best to use this module
+before any others and to call C<hash_seed> inside a BEGIN block before
+using any other modules, but even this cannot protect you against
+problems like the C<%INC> variable having pathological data inserted
+into it by the PERL5LIB environment variable.  A future version of
+this function may use PadWalker to find all of the named hashes and 
+automatically turn off hash randomization on them, but I don't think
+that will work for anonymous hashes.  If anyone can think of good
+solution, please drop me a line.
 
 =head1 AUTHOR
 
